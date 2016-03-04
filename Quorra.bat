@@ -9,9 +9,11 @@ set SHARE_NAME=afk
 set SHARE_SCRIPTS_FOLDER=scripts
 set TIME_ZONE=Mountain Standard Time
 set TIME_SERVER=time-a.nist.gov
+
 :: Windows upgrade bits go in these folders, the structure should be included with this script
 set SHARE_WIN10_FOLDER=updates\win10upgrade
 set SHARE_WIN81_FOLDER=updates\win81upgrade
+
 :: Are you a Microsoft partner? if so, an internal 8.1 upgrade solution will be implemented, if not an alernate manual upgrade method will be use.
 set MS_PARTNER=TRUE
 
@@ -45,9 +47,9 @@ timeout 1 >nul 2>&1
 CLS
 
 ECHO.
-ECHO ===============================================
-ECHO OEM Junk Cleanup and System Tweak Script
-ECHO ===============================================
+ECHO ======================================================
+ECHO Welcome to Quorra! The One-Stop OEM Junk Removal Tool!
+ECHO ======================================================
 ECHO.
 
 echo Setting Time Zone to %TIME_ZONE%
@@ -144,6 +146,7 @@ reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "Ena
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "PromptOnSecureDesktop" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "ValidateAdminCodeSignatures" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
 
+echo LOL we don't actually do anything yet. But that was fun, wasn't it? Let's tidy back up!
 pause
 
 echo.

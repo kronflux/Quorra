@@ -4,10 +4,11 @@ setlocal enableextensions
 CD /D "%HOMEDRIVE%%HOMEPATH%"
 set SCRIPT_VERSION=0.0.1
 
-:: Change these variables to match your setup
+:: Change these variables to match your setup, the default points to \\share\afk\scripts with a subfolder called resources
 set SHARE_HOST=share
 set SHARE_NAME=afk
-set SHARE_SCRIPTS_FOLDER=scripts
+set SHARE_SCRIPT_FOLDER=scripts
+set SHARE_SCRIPT_RESOURCES_FOLDER=resources
 set TIME_ZONE=Mountain Standard Time
 set TIME_SERVER=time-a.nist.gov
 
@@ -50,9 +51,10 @@ title Quorra v%SCRIPT_VERSION%
 :::   \__\_\\__,_|\___/|_|  |_|  \__,_|
 
 for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
-ECHO =======================================
-ECHO Welcome to Quorra! Blah Blah Blah !
-ECHO =======================================
+echo =======================================
+echo.  Welcome to Quorra! Blah Blah Blah !
+echo =======================================
+echo.
 
 echo Setting Time Zone to %TIME_ZONE%
 tzutil /s "%TIME_ZONE%" >nul 2>&1
@@ -125,12 +127,17 @@ echo Share Information:
 echo Location: \\%SHARE_HOST%\%SHARE_NAME%
 echo IP: %SHARE_IP%
 echo.
-echo Mounting share to drive Z:
+echo Mounting share to drive Z
 net use z: "\\%SHARE_IP%\%SHARE_NAME%" /user:Everyone /P:Yes >nul 2>&1
-pushd "Z:\%SHARE_SCRIPTS_FOLDER%"
-CD /D "Z:\%SHARE_SCRIPTS_FOLDER%"
+pushd "Z:\%SHARE_SCRIPT_FOLDER%" >nul 2>&1
+CD /D "Z:\%SHARE_SCRIPT_FOLDER%" >nul 2>&1
 
 echo.
+
+:: Start Caffeine to prevent system from sleeping
+if exist "\\%SHARE_HOST%\%SHARE_NAME%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\caffeine.exe" (
+start "" \\%SHARE_HOST%\%SHARE_NAME%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\caffeine.exe -noicon
+)
 
 :: Add script to system startup in case of unexpected reboot
 echo Adding startup entry
@@ -148,6 +155,7 @@ reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "Ena
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "PromptOnSecureDesktop" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "ValidateAdminCodeSignatures" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
 
+CALL :resumeScript
 echo LOL we don't actually do anything yet. But that was fun, wasn't it? Let's tidy back up!
 pause
 
@@ -175,9 +183,13 @@ net use * /delete /yes >nul 2>&1
 
 echo Tidying Up
 
+taskkill /f /t /im "caffeine.exe" >nul 2>&1
 del "%appdata%\Microsoft\Windows\Recent\*.*" /q >nul 2>&1
 del "%appdata%\microsoft\windows\recent\automaticdestinations\*.*" /q >nul 2>&1
 rundll32.exe inetcpl.cpl,ClearMyTracksByProcess 4351 >nul 2>&1
 
 endlocal
 exit
+
+:resumeScript
+:: Nothing here yet...

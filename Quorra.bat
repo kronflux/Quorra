@@ -2,6 +2,7 @@
 @ECHO OFF
 setlocal enableextensions
 CD /D "%HOMEDRIVE%%HOMEPATH%"
+set SCRIPT_VERSION=0.0.1
 
 :: Change these variables to match your setup
 set SHARE_HOST=share
@@ -40,17 +41,18 @@ if '%errorlevel%' NEQ '0' (
     pushd "%CD%"
     CD /D "%HOMEDRIVE%%HOMEPATH%"
 :--------------------------------------
+color 03
+title Quorra v%SCRIPT_VERSION%
+:::    ___                             
+:::   / _ \ _   _  ___  _ __ _ __ __ _ 
+:::  | | | | | | |/ _ \| '__| '__/ _` |
+:::  | |_| | |_| | (_) | |  | | | (_| |
+:::   \__\_\\__,_|\___/|_|  |_|  \__,_|
 
-CLS
-ECHO Skynet Defense System Activated!
-timeout 1 >nul 2>&1
-CLS
-
-ECHO.
-ECHO ======================================================
-ECHO Welcome to Quorra! The One-Stop OEM Junk Removal Tool!
-ECHO ======================================================
-ECHO.
+for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
+ECHO =======================================
+ECHO Welcome to Quorra! Blah Blah Blah !
+ECHO =======================================
 
 echo Setting Time Zone to %TIME_ZONE%
 tzutil /s "%TIME_ZONE%" >nul 2>&1

@@ -19,6 +19,16 @@ set SHARE_WIN81_FOLDER=updates\win81upgrade
 :: Are you a Microsoft partner? if so, an internal 8.1 upgrade solution will be implemented, if not an alernate manual upgrade method will be use.
 set MS_PARTNER=TRUE
 
+set WIN_NAME=undetected
+set WIN_VER=undetected
+set WIN_VER_NUM=undetected
+set WIN=undetected
+SET NEWSETUP=undecided
+SET REMOVALS=undecided
+SET ICONS=undecided
+SET TWEAKS=undecided
+SET SUPPORT=undecided
+
 :: Check for administrative priveleges, attempt to elevate if not already
 :-------------------------------------
 ::  --> Check for permissions
@@ -92,10 +102,6 @@ set CUR_DATE=%Month%-%Day%-%Year%
 for /f "delims=[] tokens=2" %%a in ('ping %SHARE_HOST% -n 1 ^| findstr "["') do (set SHARE_IP=%%a)
 for /f "delims=[] tokens=2" %%a in ('ping %ComputerName% -n 1 ^| findstr "["') do (set IP=%%a)
 
-set WIN_NAME=undetected
-set WIN_VER=undetected
-set WIN_VER_NUM=undetected
-set WIN=undetected
 FOR /f "tokens=4*" %%i IN ('reg query "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion" /v ProductName ^| Find "ProductName"') DO set WIN_NAME=%%j
 FOR /f "tokens=4 delims=[] " %%i IN ('ver') DO set WIN_VER_NUM=%%i
 
@@ -135,8 +141,8 @@ CD /D "Z:\%SHARE_SCRIPT_FOLDER%" >nul 2>&1
 echo.
 
 :: Start Caffeine to prevent system from sleeping
-if exist "\\%SHARE_HOST%\%SHARE_NAME%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\caffeine.exe" (
-start "" \\%SHARE_HOST%\%SHARE_NAME%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\caffeine.exe -noicon
+if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\caffeine.exe" (
+start "" Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\caffeine.exe -noicon
 )
 
 :: Add script to system startup in case of unexpected reboot
@@ -156,10 +162,93 @@ reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "Pro
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "ValidateAdminCodeSignatures" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
 
 CALL :resumeScript
-echo LOL we don't actually do anything yet. But that was fun, wasn't it? Let's tidy back up!
-pause
+
+:preQuestions
+CHOICE /C YN /M "Is this a new computer setup?"
+IF ERRORLEVEL 2 timeout 1 >nul 2>&1
+IF ERRORLEVEL 1 (
+SET NEWSETUP=True
+SET REMOVALS=True
+SET ICONS=True
+SET TWEAKS=True
+SET SUPPORT=True
+echo NEWSETUP > %temp%\Quorra_NEWSETUP.tmp )
+
+CHOICE /C YN /M "Run Quorra with Removals?"
+IF ERRORLEVEL 2 timeout 1 >nul 2>&1
+IF ERRORLEVEL 1 (
+SET REMOVALS=True
+echo REMOVALS > %temp%\Quorra_REMOVALS.tmp )
+
+CHOICE /C YN /M "Remove Desktop icons, Favorites and Pinned Taskbar Items?"
+IF ERRORLEVEL 2 timeout 1 >nul 2>&1
+IF ERRORLEVEL 1 (
+SET ICONS=True
+echo ICONS > %temp%\Quorra_ICONS.tmp )
+
+CHOICE /C YN /M "Run Quorra with Tweaks?"
+IF ERRORLEVEL 2 timeout 1 >nul 2>&1
+IF ERRORLEVEL 1 (
+SET TWEAKS=True
+echo TWEAKS > %temp%\Quorra_TWEAKS.tmp )
+
+CHOICE /C YN /M "Run Quorra with Support Information?"
+IF ERRORLEVEL 2 timeout 1 >nul 2>&1
+IF ERRORLEVEL 1 (
+SET SUPPORT=True
+echo SUPPORT > %temp%\Quorra_SUPPORT.tmp )
 
 echo.
+
+:removalsGeneral
+:: General Removals
+if "%REMOVALS%"=="True" (
+echo GENREM > %temp%\Quorra_GENREM.tmp
+if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_general.bat" (
+echo Starting General Removals
+start "Quorra - General Removals" /wait Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_general.bat
+echo General Removals Complete
+if exist "%temp%\Quorra_GENREM.tmp" DEL "%temp%\Quorra_GENREM.tmp"
+echo.
+))
+
+:removalsGUID
+:: Removals by GUID
+if "%REMOVALS%"=="True" (
+echo GUIDREM > %temp%\Quorra_GUIDREM.tmp
+if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_by_GUID.bat" (
+echo Starting Removals by GUID
+start "Quorra - GUID Removals" /wait Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_by_GUID.bat
+echo Removals by GUID Complete
+if exist "%temp%\Quorra_GUIDREM.tmp" DEL "%temp%\Quorra_GUIDREM.tmp"
+echo.
+))
+
+:removalsGUIDToolbars
+:: Toolbar Removals by GUID
+if "%REMOVALS%"=="True" (
+echo TBGUIDREM > %temp%\Quorra_TBGUIDREM.tmp
+if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\toolbars_BHOs_to_target_by_GUID.bat" (
+echo Starting Toolbar Removals by GUID
+start "Quorra - Toolbar GUID Removals" /wait Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\toolbars_BHOs_to_target_by_GUID.bat
+echo Toolbar Removals by GUID Complete
+if exist "%temp%\Quorra_TBGUIDREM.tmp" DEL "%temp%\Quorra_TBGUIDREM.tmp"
+echo.
+))
+
+:removalsNAME
+if "%REMOVALS%"=="True" (
+echo NAMEREM > %temp%\Quorra_NAMEREM.tmp
+if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_by_name.txt" (
+ECHO Starting removals by name... This may take a while.
+for /f "tokens=*" %%i in (Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_by_name.txt) DO (
+    echo Searching for %%i...
+    wmic product where "name like '%%i'" uninstall /nointeractive
+)
+ECHO Removals by name complete
+if exist "%temp%\Quorra_NAMEREM.tmp" DEL "%temp%\Quorra_NAMEREM.tmp"
+ECHO.
+))
 
 :: Remove startup entry
 echo Removing startup entry
@@ -188,8 +277,27 @@ del "%appdata%\Microsoft\Windows\Recent\*.*" /q >nul 2>&1
 del "%appdata%\microsoft\windows\recent\automaticdestinations\*.*" /q >nul 2>&1
 rundll32.exe inetcpl.cpl,ClearMyTracksByProcess 4351 >nul 2>&1
 
+IF EXIST %temp%\Quorra_NEWSETUP.tmp DEL %temp%\Quorra_NEWSETUP.tmp
+IF EXIST %temp%\Quorra_REMOVALS.tmp DEL %temp%\Quorra_REMOVALS.tmp
+IF EXIST %temp%\Quorra_ICONS.tmp DEL %temp%\Quorra_ICONS.tmp
+IF EXIST %temp%\Quorra_TWEAKS.tmp DEL %temp%\Quorra_TWEAKS.tmp
+IF EXIST %temp%\Quorra_SUPPORT.tmp DEL %temp%\Quorra_SUPPORT.tmp
+IF EXIST %temp%\Quorra_GENREM.tmp DEL %temp%\Quorra_GENREM.tmp
+IF EXIST %temp%\Quorra_GUIDREM.tmp DEL %temp%\Quorra_GUIDREM.tmp
+IF EXIST %temp%\Quorra_TBGUIDREM.tmp DEL %temp%\Quorra_TBGUIDREM.tmp
+IF EXIST %temp%\Quorra_NAMEREM.tmp DEL %temp%\Quorra_NAMEREM.tmp
+
 endlocal
 exit
 
 :resumeScript
-:: Nothing here yet...
+IF EXIST %temp%\Quorra_NEWSETUP.tmp SET NEWSETUP=True
+IF EXIST %temp%\Quorra_REMOVALS.tmp SET REMOVALS=True
+IF EXIST %temp%\Quorra_ICONS.tmp SET ICONS=True
+IF EXIST %temp%\Quorra_TWEAKS.tmp SET TWEAKS=True
+IF EXIST %temp%\Quorra_SUPPORT.tmp SET SUPPORT=True
+
+IF EXIST %temp%\Quorra_GENREM.tmp GOTO :removalsGeneral
+IF EXIST %temp%\Quorra_GUIDREM.tmp GOTO :removalsGUID
+IF EXIST %temp%\Quorra_TBGUIDREM.tmp GOTO :removalsGUIDToolbars
+IF EXIST %temp%\Quorra_NAMEREM.tmp GOTO :removalsNAME

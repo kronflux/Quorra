@@ -171,6 +171,7 @@ SET NEWSETUP=True
 SET REMOVALS=True
 SET ICONS=True
 SET TWEAKS=True
+SET RUNTIMES=True
 SET SUPPORT=True
 echo NEWSETUP > %temp%\Quorra_NEWSETUP.tmp )
 
@@ -191,6 +192,12 @@ IF ERRORLEVEL 2 timeout 1 >nul 2>&1
 IF ERRORLEVEL 1 (
 SET TWEAKS=True
 echo TWEAKS > %temp%\Quorra_TWEAKS.tmp )
+
+CHOICE /C YN /M "Run Quorra with Runtime Updates? (Adobe Reader, Flash, Java, Silverlight)"
+IF ERRORLEVEL 2 timeout 1 >nul 2>&1
+IF ERRORLEVEL 1 (
+SET RUNTIMES=True
+echo RUNTIMES > %temp%\Quorra_RUNTIMES.tmp )
 
 CHOICE /C YN /M "Run Quorra with Support Information?"
 IF ERRORLEVEL 2 timeout 1 >nul 2>&1
@@ -213,7 +220,7 @@ echo.
 ))
 
 :removalsGUID
-:: Removals by GUID
+:: Removals by GUID method
 if "%REMOVALS%"=="True" (
 echo GUIDREM > %temp%\Quorra_GUIDREM.tmp
 if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_by_GUID.bat" (
@@ -225,7 +232,7 @@ echo.
 ))
 
 :removalsGUIDToolbars
-:: Toolbar Removals by GUID
+:: Toolbar Removals by GUID method
 if "%REMOVALS%"=="True" (
 echo TBGUIDREM > %temp%\Quorra_TBGUIDREM.tmp
 if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\toolbars_BHOs_to_target_by_GUID.bat" (
@@ -237,6 +244,7 @@ echo.
 ))
 
 :removalsNAME
+:: Removals by Name method
 if "%REMOVALS%"=="True" (
 echo NAMEREM > %temp%\Quorra_NAMEREM.tmp
 if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_by_name.txt" (
@@ -249,6 +257,216 @@ ECHO Removals by name complete
 if exist "%temp%\Quorra_NAMEREM.tmp" DEL "%temp%\Quorra_NAMEREM.tmp"
 ECHO.
 ))
+
+:removalsICONS
+:: Remove unwanted links, shortcuts, pinned items
+if "%ICONS%"=="True" (
+DEL "%appdata%\Microsoft\Windows\Start Menu\Programs\Pc App Store.lnk" >nul 2>&1
+DEL /F /Q "%AllUsersProfile%\Desktop\*.lnk" >nul 2>&1
+DEL /F /Q "%AllUsersProfile%\Desktop\*.url" >nul 2>&1
+DEL /F /Q "%ProgramData%\Microsoft\Windows\Start Menu\Programs\Games\*.lnk"
+DEL /F /Q "%ProgramData%\Microsoft\Windows\Start Menu\Programs\McAfee\*.lnk"
+DEL /F /Q "%ProgramData%\Microsoft\Windows\Start Menu\Programs\Music, Photos and Videos\Snapfish.lnk" >nul 2>&1
+DEL /F /Q "%systemdrive%\Users\Public\Desktop\*.lnk" >nul 2>&1
+DEL /F /Q "%systemdrive%\Users\Public\Desktop\*.url" >nul 2>&1
+DEL /F /Q "%UserProfile%\Desktop\*.lnk" >nul 2>&1
+DEL /F /Q "%UserProfile%\Favorites\*.url" >nul 2>&1
+DEL /F /Q "%UserProfile%\Favorites\Acer\*.url" >nul 2>&1
+DEL /F /Q "%UserProfile%\Favorites\Favorites Bar\*.url" >nul 2>&1
+DEL /F /Q "%UserProfile%\Favorites\HP\*.url" >nul 2>&1
+DEL /F /Q "%UserProfile%\Favorites\Links\*.url" >nul 2>&1
+DEL /F /Q "%UserProfile%\Favorites\Microsoft Websites\*.url" >nul 2>&1
+DEL /F /Q "%UserProfile%\Favorites\MSN Websites\*.url" >nul 2>&1
+DEL /F /Q "%UserProfile%\Favorites\Websites for United States\*.url" >nul 2>&1
+DEL /F /Q "%UserProfile%\Favorites\Windows Live\*.url" >nul 2>&1
+DEL /F /S /Q /A "%AppData%\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\*" >nul 2>&1
+reg delete "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Compatibility Assistant\Store" /f
+REG DELETE HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband /f
+RMDIR "%ProgramData%\Microsoft\Windows\Start Menu\Programs\McAfee" >nul 2>&1
+RMDIR "%UserProfile%\Favorites\Acer" >nul 2>&1
+RMDIR "%UserProfile%\Favorites\HP" >nul 2>&1
+RMDIR "%UserProfile%\Favorites\Microsoft Websites" >nul 2>&1
+RMDIR "%UserProfile%\Favorites\MSN Websites" >nul 2>&1
+RMDIR "%UserProfile%\Favorites\Websites for United States" >nul 2>&1
+RMDIR "%UserProfile%\Favorites\Windows Live" >nul 2>&1
+RMDIR /S /Q "%ProgramData%\Microsoft\Windows\Start Menu\Programs\Amazon Weblink" >nul 2>&1
+RMDIR /S /Q "%ProgramFiles%\Accessory Store" >nul 2>&1
+RMDIR /S /Q "%ProgramFiles%\Amazon Weblink" >nul 2>&1
+RMDIR /S /Q "%ProgramFiles%\Booking.com" >nul 2>&1
+RMDIR /S /Q "%ProgramFiles(x86)%\Accessory Store" >nul 2>&1
+RMDIR /S /Q "%ProgramFiles(x86)%\Amazon Weblink" >nul 2>&1
+RMDIR /S /Q "%ProgramFiles(x86)%\Booking.com" >nul 2>&1
+)
+
+:tweakStuff
+:: Common customizations, security enhancements, etc
+if "%TWEAKS%"=="True" (
+:: Show desktop wallpaper on Start screen (Windows 8)
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent" /v "MotionAccentId_v1.00" /t REG_DWORD /d 0x000000db /f >nul 2>&1
+
+:: Set start screen color to default (Windows 8)
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent" /v "ColorSet_Version3" /t REG_DWORD /d 0x00000008 /f >nul 2>&1
+
+:: List Desktop apps first in the Apps view when sorted by category (Windows 8)
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\StartPage" /v "DesktopFirst" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+
+:: Boot to Desktop (Windows 8)
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\StartPage" /v "OpenAtLogon" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+
+:: Show My Computer/This PC on Desktop
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcons\NewStartPanel" /v "{20D04FE0-3AEA-1069-A2D8-08002B30309D}" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+
+:: Do not show Windows Store on Taskbar
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "StoreAppsOnTaskbar" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+
+:: Do not constantly check whether disk is running low on space (Improves performance)
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v NoLowDiskSpaceChecks /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+
+:: Disable Automatic Network Shortcut Resolution
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v LinkResolveIgnoreLinkInfo /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+
+:: Disable Search for Broken Shortcuts
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v NoResolveSearch /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+
+:: Disable Tracking of Broken Shortcuts
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v NoResolveTrack /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+
+:: Disable using Web service to check for unknown file types
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v NoInternetOpenWith /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+
+:: Disable Aero Shake
+reg add "HKCU\Software\Policies\Microsoft\Windows" /v NoWindowMinimizingShortcuts /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+
+:: Enable NumLock by Default
+reg add "HKU\.DEFAULT\Control Panel\Keyboard" /v InitialKeyboardIndicators /t REG_DWORD /d 0x00000002 /f >nul 2>&1
+
+:: Add Copy To and Move To Context Menu Items
+reg add "HKCR\AllFilesystemObjects\shellex\ContextMenuHandlers\Copy To" /ve /t REG_SZ /d "{C2FBB630-2971-11D1-A18C-00C04FD75D13}" /f >nul 2>&1
+reg add "HKCR\AllFilesystemObjects\shellex\ContextMenuHandlers\Move To" /ve /t REG_SZ /d "{C2FBB631-2971-11D1-A18C-00C04FD75D13}" /f >nul 2>&1
+
+:: Disable Help Sticker Notifications
+reg add "HKU\CUSTOM\Software\Policies\Microsoft\Windows\EdgeUI" /v "DisableHelpSticker" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+
+:: Set Google as IE11 Default
+reg add "HKCU\SOFTWARE\Microsoft\Internet Explorer\SearchScopes\{89418666-DF74-4CAC-A2BD-B69FB4A0228A}" /f >nul 2>&1
+reg add "HKCU\SOFTWARE\Microsoft\Internet Explorer\SearchScopes\{89418666-DF74-4CAC-A2BD-B69FB4A0228A}" /v "DisplayName" /t REG_SZ /d "Google" /f >nul 2>&1
+reg add "HKCU\SOFTWARE\Microsoft\Internet Explorer\SearchScopes\{89418666-DF74-4CAC-A2BD-B69FB4A0228A}" /v "FaviconURL" /t REG_SZ /d "https://www.google.ca/favicon.ico" /f >nul 2>&1
+reg add "HKCU\SOFTWARE\Microsoft\Internet Explorer\SearchScopes\{89418666-DF74-4CAC-A2BD-B69FB4A0228A}" /v "FaviconURLFallback" /t REG_SZ /d "https://www.google.ca/favicon.ico" /f >nul 2>&1
+reg add "HKCU\SOFTWARE\Microsoft\Internet Explorer\SearchScopes\{89418666-DF74-4CAC-A2BD-B69FB4A0228A}" /v "OSDFileURL" /t REG_SZ /d "http://www.iegallery.com/en-us/AddOns/DownloadAddOn?resourceId=813" /f >nul 2>&1
+reg add "HKCU\SOFTWARE\Microsoft\Internet Explorer\SearchScopes\{89418666-DF74-4CAC-A2BD-B69FB4A0228A}" /v "ShowSearchSuggestions" /t REG_DWORD /d 1 /f >nul 2>&1
+reg add "HKCU\SOFTWARE\Microsoft\Internet Explorer\SearchScopes\{89418666-DF74-4CAC-A2BD-B69FB4A0228A}" /v "SuggestionsURL" /t REG_SZ /d "http://clients5.google.com/complete/search?q=%7BsearchTerms%7D&client=ie8&mw=%7Bie:maxWidth%7D&sh=%7Bie:sectionHeight%7D&rh=%7Bie:rowHeight%7D&inputencoding=%7BinputEncoding%7D&outputencoding=%7BoutputEncoding%7D" /f >nul 2>&1
+reg add "HKCU\SOFTWARE\Microsoft\Internet Explorer\SearchScopes\{89418666-DF74-4CAC-A2BD-B69FB4A0228A}" /v "SuggestionsURLFallback" /t REG_SZ /d "http://clients5.google.com/complete/search?hl=%7Blanguage%7D&q=%7BsearchTerms%7D&client=ie8&inputencoding=%7BinputEncoding%7D&outputencoding=%7BoutputEncoding%7D" /f >nul 2>&1
+reg add "HKCU\SOFTWARE\Microsoft\Internet Explorer\SearchScopes\{89418666-DF74-4CAC-A2BD-B69FB4A0228A}" /v "TopResultURLFallback" /t REG_SZ /d "" /f >nul 2>&1
+reg add "HKCU\SOFTWARE\Microsoft\Internet Explorer\SearchScopes\{89418666-DF74-4CAC-A2BD-B69FB4A0228A}" /v "URL" /t REG_SZ /d "https://www.google.ca/search?q=%7BsearchTerms%7D&sourceid=ie7&rls=com.microsoft:%7Blanguage%7D:%7Breferrer:source%7D&ie=%7BinputEncoding?%7D&oe=%7BoutputEncoding?%7D" /f >nul 2>&1
+reg add "HKCU\SOFTWARE\Microsoft\Internet Explorer\SearchScopes" /v "DefaultScope" /t REG_SZ /d "{89418666-DF74-4CAC-A2BD-B69FB4A0228A}" /f >nul 2>&1
+reg add "HKCU\SOFTWARE\Microsoft\Internet Explorer\Main" /v "Search Page" /t REG_SZ /d "https://www.google.ca/" /f >nul 2>&1
+reg add "HKCU\SOFTWARE\Microsoft\Internet Explorer\Main" /v "Start Page Redirect Cache" /t REG_SZ /d "https://www.google.ca/" /f >nul 2>&1
+
+:: Attempt to Set Google as Edge Homepage
+reg add "HKCR\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Storage\microsoft.microsoftedge_8wekyb3d8bbwe\MicrosoftEdge\Main" /v "HomeButtonEnabled" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+reg add "HKCR\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Storage\microsoft.microsoftedge_8wekyb3d8bbwe\MicrosoftEdge\Main" /v "HomeButtonPage" /t REG_SZ /d "https://www.google.ca/" /f >nul 2>&1
+reg add "HKCR\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Storage\microsoft.microsoftedge_8wekyb3d8bbwe\MicrosoftEdge\Main" /v "IE10TourShown" /t REG_SZ /d 0x00000001 /f >nul 2>&1
+
+:: Hide Search Box on Taskbar
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "SearchBoxTaskbarMode" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+
+:: Download updates from Microsoft and LAN
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config" /v "DownloadMode" /t REG_DWORD /d 0x00000002 /f >nul 2>&1
+
+:: Disable Peer to Peer Updates
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config" /v "DODownloadMode" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+
+:: Disable Diagnostic and usage data
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+
+:: Disable Application Impact Telemetry
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat" /v "AITEnable" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+
+:: Disable Keylogger
+reg add "HKLM\SYSTEM\CurrentControlSet\Control\WMI\AutoLogger\AutoLogger-Diagtrack-Listener" /v "Start" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+
+:: Open Explorer to This PC instead of Quick Access
+reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "LaunchTo" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+
+:: Remove Retail Demo
+reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescriptions\{12D4C69E-24AD-4923-BE19-31321C43A767}" /f >nul 2>&1
+
+:: Add Pin to Start to Context Menu
+reg add "HKCR\*\shellex\ContextMenuHandlers\PintoStartScreen" /ve /t REG_SZ /d "{470C0EBD-5D73-4d58-9CED-E91E22E23282}" /f >nul 2>&1
+
+:: Disable Web Search from Start Menu
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v "DisableWebSearch" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+
+:: Disable Bing Search
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v "ConnectedSearchUseWeb" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v "ConnectedSearchUseWebOverMeteredConnections" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+
+:: LOL Why is Dr Watson still in Windows 10? Let's disable that...
+reg delete "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AeDebug" /f >nul 2>&1
+reg delete "HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\AeDebug" /f >nul 2>&1
+
+:: Disable Fault Tolerant Heap (This is mostly for developers. Average user will never need this)
+reg add "HKLM\SOFTWARE\Software\Microsoft\FTH" /v "Enabled" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+
+:: Harden RPC
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\RpcSs" /v "ListenOnInternet" /t REG_SZ /d "N" /f >nul 2>&1
+
+:: Disable IPv6 as it ignores most Windows network security
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\tcpip6\Parameters" /v "DisabledComponents" /t REG_DWORD /d 0xfffffff /f >nul 2>&1
+
+:: Disable DCOM
+reg add "HKLM\Software\Microsoft\Ole" /v "EnableDCOM" /t REG_SZ /d "N" /f >nul 2>&1
+
+:: Harden TCPIP Stack
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\AFD\Parameters" /v "DisableAddressSharing" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\AFD\Parameters" /v "DynamicBacklogGrowthDelta" /t REG_DWORD /d 0x00000010 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\AFD\Parameters" /v "EnableDynamicBacklog" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\AFD\Parameters" /v "MaximumDynamicBacklog" /t REG_DWORD /d 0x00004000 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\AFD\Parameters" /v "MinimumDynamicBacklog" /t REG_DWORD /d 0x00000010 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\Netbt\Parameters" /v "NoNameReleaseOnDemand" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "DisableIPSourceRouting" /t REG_DWORD /d 0x00000002 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "EnableAddrMaskReply" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "EnableDeadGWDetect" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "EnableICMPRedirect" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "EnableMulticastForwarding" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "EnablePMTUDiscovery" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "IPEnableRouter" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "KeepAliveTime" /t REG_DWORD /d 0x000493e0 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "NoNameReleaseOnDemand" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "PerformRouterDiscovery" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "SynAttackProtect" /t REG_DWORD /d 0x00000002 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "TcpMaxConnectResponseRetransmissions" /t REG_DWORD /d 0x00000002 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "TcpMaxDataRetransmissions" /t REG_DWORD /d 0x00000002 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "TcpMaxHalfOpen" /t REG_DWORD /d 0x000001f4 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "TcpMaxHalfOpenRetried" /t REG_DWORD /d 0x00000190 /f >nul 2>&1
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "TcpMaxPortsExhausted" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+
+:: Disable Windows Customer Experience Improvement Program
+reg add "HKLM\SOFTWARE\Policies\Microsoft\SQMClient\Windows" /v "CEIPEnable" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+
+:: Disable Third Party Browser Extensions in IE
+reg add "HKCU\Software \Microsoft\Internet Explorer\Main" /v "Enable Browser Extensions" /t REG_SZ /d "no" /f >nul 2>&1
+
+:: Disable automatically installing Web components
+reg add "HKCU\Software\Microsoft\Internet Explorer\Main" /v "NoJITSetup" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Internet Explorer\Main" /v "NoWebJITSetup" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+
+:: Do not allow software to run if signature is invalid
+reg add "HKLM\Software\Microsoft\Internet Explorer\Download" /v "CheckExeSignatures" /t REG_SZ /d "yes" /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Internet Explorer\Download" /v "RunInvalidSignatures" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+
+:: Use EdgeHTML in IE
+reg add "HKCU\Software\Microsoft\Internet Explorer\Main" /v "DisableRandomFlighting" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Internet Explorer\Main" /v "EnableLegacyEdgeSwitching" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
+
+:: Do not open links in Metro IE App, always use Desktop
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v "ApplicationTileImmersiveActivation" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
+reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v "AssociationActivationMode" /t REG_DWORD /d 0x00000002 /f >nul 2>&1
+
+:: Set IGMP as send only as is rarely used and could pose a security risk
+netsh interface ipv4 set global mldlevel=sendonly >nul 2>&1
+)
 
 :: Remove startup entry
 echo Removing startup entry
@@ -281,6 +499,7 @@ IF EXIST %temp%\Quorra_NEWSETUP.tmp DEL %temp%\Quorra_NEWSETUP.tmp
 IF EXIST %temp%\Quorra_REMOVALS.tmp DEL %temp%\Quorra_REMOVALS.tmp
 IF EXIST %temp%\Quorra_ICONS.tmp DEL %temp%\Quorra_ICONS.tmp
 IF EXIST %temp%\Quorra_TWEAKS.tmp DEL %temp%\Quorra_TWEAKS.tmp
+IF EXIST %temp%\Quorra_RUNTIMES.tmp DEL %temp%\Quorra_RUNTIMES.tmp
 IF EXIST %temp%\Quorra_SUPPORT.tmp DEL %temp%\Quorra_SUPPORT.tmp
 IF EXIST %temp%\Quorra_GENREM.tmp DEL %temp%\Quorra_GENREM.tmp
 IF EXIST %temp%\Quorra_GUIDREM.tmp DEL %temp%\Quorra_GUIDREM.tmp
@@ -295,6 +514,7 @@ IF EXIST %temp%\Quorra_NEWSETUP.tmp SET NEWSETUP=True
 IF EXIST %temp%\Quorra_REMOVALS.tmp SET REMOVALS=True
 IF EXIST %temp%\Quorra_ICONS.tmp SET ICONS=True
 IF EXIST %temp%\Quorra_TWEAKS.tmp SET TWEAKS=True
+IF EXIST %temp%\Quorra_RUNTIMES.tmp SET RUNTIMES=True
 IF EXIST %temp%\Quorra_SUPPORT.tmp SET SUPPORT=True
 
 IF EXIST %temp%\Quorra_GENREM.tmp GOTO :removalsGeneral

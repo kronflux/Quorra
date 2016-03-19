@@ -490,7 +490,7 @@ reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "TcpMaxPort
 reg add "HKLM\SOFTWARE\Policies\Microsoft\SQMClient\Windows" /v "CEIPEnable" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
 
 :: Disable Third Party Browser Extensions in IE
-reg add "HKCU\Software \Microsoft\Internet Explorer\Main" /v "Enable Browser Extensions" /t REG_SZ /d "no" /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Internet Explorer\Main" /v "Enable Browser Extensions" /t REG_SZ /d "no" /f >nul 2>&1
 
 :: Disable automatically installing Web components
 reg add "HKCU\Software\Microsoft\Internet Explorer\Main" /v "NoJITSetup" /t REG_DWORD /d 0x00000001 /f >nul 2>&1

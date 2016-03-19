@@ -78,8 +78,8 @@ $appPackages = @(
 
 foreach ($appPackage in $appPackages) {
     Get-AppxPackage -Name $appPackage -AllUsers | Remove-AppxPackage | Out-Null
-	Get-AppxPackage –AllUsers | Where-Object Name -In $appPackage | Remove-AppxPackage | Out-Null
+	#Get-AppxPackage –AllUsers | Where-Object Name -In $appPackage | Remove-AppxPackage | Out-Null
     Get-AppXProvisionedPackage -Online | where DisplayName -EQ $appPackage | Remove-AppxProvisionedPackage -Online | Out-Null
 	Get-AppxProvisionedPackage -Online | Where-Object Name -In $appPackage | Remove-AppxProvisionedPackage -Online | Out-Null
-	remove-appxpackage $(Get-AppxPackage | where {$_.name -like "*" + $appPackage + "*"}).PackageFullName | Out-Null
+	#remove-appxpackage $(Get-AppxPackage | where {$_.name -like "*" + $appPackage + "*"}).PackageFullName | Out-Null
 }

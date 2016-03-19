@@ -258,6 +258,22 @@ if exist "%temp%\Quorra_NAMEREM.tmp" DEL "%temp%\Quorra_NAMEREM.tmp"
 ECHO.
 ))
 
+:removalsPS
+:: Modern Windows App Removal
+if "%REMOVALS%"=="True" (
+if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\metro_3rd_party_modern_apps_to_target_by_name.ps1" (
+ECHO Starting Modern App Removal...
+powershell -noprofile -executionpolicy bypass -file "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\metro_3rd_party_modern_apps_to_target_by_name.ps1"
+ECHO Modern App Removal Complete
+ECHO.
+)
+if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\metro_Microsoft_modern_apps_to_target_by_name.ps1" (
+ECHO Starting Modern App Removal...
+powershell -noprofile -executionpolicy bypass -file "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\metro_Microsoft_modern_apps_to_target_by_name.ps1"
+ECHO Modern App Removal Complete
+ECHO.
+))
+
 :removalsICONS
 :: Remove unwanted links, shortcuts, pinned items
 if "%ICONS%"=="True" (

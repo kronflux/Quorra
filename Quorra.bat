@@ -207,6 +207,32 @@ echo TWEAKS > %temp%\Quorra_TWEAKS.tmp )
 
 echo.
 
+:killTasks
+:: Kill all unsecured applications
+if "%REMOVALS%"=="True" (
+ECHO Terminating all unprotected user started processes...
+
+:: Add an if not and closing bracket to exclude additional processes from being terminated
+for /f "skip=3 tokens=1" %%i in ('TASKLIST /FI "USERNAME eq %userdomain%\%username%" /FI "STATUS eq running"') do (
+if not "%%i"=="caffeine.exe" (
+if not "%%i"=="choice.exe" (
+if not "%%i"=="cmd.exe" (
+if not "%%i"=="conhost.exe" (
+if not "%%i"=="explorer.exe" (
+if not "%%i"=="rebecca.exe" (
+if not "%%i"=="RuntimeBroker.exe" (
+if not "%%i"=="ShellExperienceHost.exe" (
+if not "%%i"=="sihost.exe" (
+if not "%%i"=="svchost.exe" (
+if not "%%i"=="tasklist.exe" (
+if not "%%i"=="Taskmgr.exe" (
+taskkill /f /t /im "%%i" >nul 2>&1
+)))))))))))))
+
+ECHO Process termination complete.
+ECHO.
+)
+
 :removalsGeneral
 :: General Removals
 if "%REMOVALS%"=="True" (
@@ -261,6 +287,7 @@ ECHO.
 :removalsPS
 :: Modern Windows App Removal
 if "%REMOVALS%"=="True" (
+echo PSREM > %temp%\Quorra_PSREM.tmp
 if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\metro_3rd_party_modern_apps_to_target_by_name.ps1" (
 ECHO Starting Modern App Removal...
 powershell -noprofile -executionpolicy bypass -file "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\metro_3rd_party_modern_apps_to_target_by_name.ps1"
@@ -271,6 +298,7 @@ if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\metro_Microso
 ECHO Starting Modern App Removal...
 powershell -noprofile -executionpolicy bypass -file "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\metro_Microsoft_modern_apps_to_target_by_name.ps1"
 ECHO Modern App Removal Complete
+if exist "%temp%\Quorra_PSREM.tmp" DEL "%temp%\Quorra_PSREM.tmp"
 ECHO.
 ))
 
@@ -521,6 +549,7 @@ IF EXIST %temp%\Quorra_GENREM.tmp DEL %temp%\Quorra_GENREM.tmp
 IF EXIST %temp%\Quorra_GUIDREM.tmp DEL %temp%\Quorra_GUIDREM.tmp
 IF EXIST %temp%\Quorra_TBGUIDREM.tmp DEL %temp%\Quorra_TBGUIDREM.tmp
 IF EXIST %temp%\Quorra_NAMEREM.tmp DEL %temp%\Quorra_NAMEREM.tmp
+IF EXIST %temp%\Quorra_PSREM.tmp DEL %temp%\Quorra_PSREM.tmp
 
 endlocal
 exit
@@ -537,3 +566,4 @@ IF EXIST %temp%\Quorra_GENREM.tmp GOTO :removalsGeneral
 IF EXIST %temp%\Quorra_GUIDREM.tmp GOTO :removalsGUID
 IF EXIST %temp%\Quorra_TBGUIDREM.tmp GOTO :removalsGUIDToolbars
 IF EXIST %temp%\Quorra_NAMEREM.tmp GOTO :removalsNAME
+IF EXIST %temp%\Quorra_PSREM.tmp GOTO :removalsPS

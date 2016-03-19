@@ -193,17 +193,17 @@ IF ERRORLEVEL 1 (
 SET TWEAKS=True
 echo TWEAKS > %temp%\Quorra_TWEAKS.tmp )
 
-CHOICE /C YN /M "Run Quorra with Runtime Updates? (Adobe Reader, Flash, Java, Silverlight)"
-IF ERRORLEVEL 2 timeout 1 >nul 2>&1
-IF ERRORLEVEL 1 (
-SET RUNTIMES=True
-echo RUNTIMES > %temp%\Quorra_RUNTIMES.tmp )
+::CHOICE /C YN /M "Run Quorra with Runtime Updates? (Adobe Reader, Flash, Java, Silverlight)"
+::IF ERRORLEVEL 2 timeout 1 >nul 2>&1
+::IF ERRORLEVEL 1 (
+::SET RUNTIMES=True
+::echo RUNTIMES > %temp%\Quorra_RUNTIMES.tmp )
 
-CHOICE /C YN /M "Run Quorra with Support Information?"
-IF ERRORLEVEL 2 timeout 1 >nul 2>&1
-IF ERRORLEVEL 1 (
-SET SUPPORT=True
-echo SUPPORT > %temp%\Quorra_SUPPORT.tmp )
+::CHOICE /C YN /M "Run Quorra with Support Information?"
+::IF ERRORLEVEL 2 timeout 1 >nul 2>&1
+::IF ERRORLEVEL 1 (
+::SET SUPPORT=True
+::echo SUPPORT > %temp%\Quorra_SUPPORT.tmp )
 
 echo.
 

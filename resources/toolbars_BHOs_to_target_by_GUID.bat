@@ -1,7 +1,6 @@
 :: Initial list by reddit.com/user/Chimaera12, modifications for use in Tron by reddit.com/user/vocatus
 @echo off
 
-
 :::::::::::::::
 :: GUID LIST ::
 :::::::::::::::

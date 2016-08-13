@@ -1,5 +1,7 @@
 :: This script is an adaptation of Tron's temp cleanup as well as my own, in time
 :: I hope to add the duplicate file finding methods from Tron as well as some other additions
+
+:: Set home path and clear screen to remove UNC path warnings
 pushd "%HOMEDRIVE%%HOMEPATH%"
 CD /D "%HOMEDRIVE%%HOMEPATH%"
 @cls

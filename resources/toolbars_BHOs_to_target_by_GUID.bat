@@ -1,4 +1,9 @@
 :: Initial list by reddit.com/user/Chimaera12, modifications for use in Tron by reddit.com/user/vocatus
+
+:: Set home path and clear screen to remove UNC path warnings
+pushd "%HOMEDRIVE%%HOMEPATH%"
+CD /D "%HOMEDRIVE%%HOMEPATH%"
+@cls
 @echo off
 
 :::::::::::::::

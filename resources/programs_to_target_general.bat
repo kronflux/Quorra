@@ -1,4 +1,9 @@
+:: Set home path and clear screen to remove UNC path warnings
+pushd "%HOMEDRIVE%%HOMEPATH%"
+CD /D "%HOMEDRIVE%%HOMEPATH%"
+@cls
 @echo off
+
 echo Pokki Removal Started
 
 rmdir /S "%LOCALAPPDATA%\Pokki" /Q >nul 2>&1

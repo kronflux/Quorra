@@ -1,6 +1,10 @@
 # Script to remove a lot of the pre-loaded 3rd-party Metro "modern app" bloatware
 # Initial creation by /u/kronflux
+# Method created by Garacesh at:  http://www.edugeek.net/forums/windows-10/161433-windows-10-removal-off-preinstalled-apps-bulk-sans-store.html#post1398039
 # Modified for use with the Tron project by /u/vocatus on reddit.com/r/TronScript
+# Modified again for use with the Quorra/OEM_Cleanup project
+
+# Add take ownership module
 Import-Module -DisableNameChecking $PSScriptRoot\take-own.psm1
 
 $ErrorActionPreference = "SilentlyContinue"
@@ -11,8 +15,12 @@ do {} until (Elevate-Privileges SeTakeOwnershipPrivilege)
 echo "Removing Third Party Windows Apps"
 
 $appPackages = @(
+
+	# Third Party Apps
+
 	"06DAC6F6.StumbleUpon"
 	"134D4F5B.Box"
+	"1430GreenfieldTechnologie.PuzzleTouch"
 	"26720RandomSaladGamesLLC.HeartsDeluxe"
 	"26720RandomSaladGamesLLC.SimpleSolitaire"
 	"29982CsabaHarmath.UnCompress"
@@ -32,8 +40,14 @@ $appPackages = @(
 	"AppUp.IntelAppUpCatalogueAppWorldwideEdition"
 	"ASUSCloudCorporation.MobileFileExplorer"
 	"B9ECED6F.ASUSGIFTBOX"
+	"BD9B8345.AlbumbySony"
+	"BD9B8345.MusicbySony"
+	"BD9B8345.Socialife"
+	"BD9B8345.VAIOCare"
+	"BD9B8345.VAIOMessageCenter"
 	"ChaChaSearch.ChaChaPushNotification"
 	"ClearChannelRadioDigital.iHeartRadio"
+	"CrackleInc.Crackle"
 	"CyberLinkCorp.ac.AcerCrystalEye"
 	"CyberLinkCorp.ac.SocialJogger"
 	"CyberLinkCorp.hs.YouCamforHP"
@@ -70,12 +84,15 @@ $appPackages = @(
 	"HPConnectedPhotopoweredbySnapfish"
 	"HPRegistration"
 	"JigsWar"
+	"KasperskyLab.KasperskyNow"
 	"KindleforWindows8"
 	"MAGIX.MusicMakerJam"
 	"McAfee"
 	"McAfeeInc.05.McAfeeSecurityAdvisorforASUS"
+	"Microsoft.MinecraftUWP"
 	"MobileFileExplorer"
 	"MusicMakerJam"
+	"NAMCOBANDAIGamesInc.PAC-MANChampionshipEditionDXfo"
 	"NAVER.LINEwin8"
 	"Netflix"
 	"PinballFx2"
@@ -97,12 +114,18 @@ $appPackages = @(
 	"YouSendIt.HighTailForLenovo"
 	"ZinioLLC.Zinio"
 	"zuukaInc.iStoryTimeLibrary"
+
 )
 
 foreach ($appPackage in $appPackages) {
-    Get-AppxPackage -Name $appPackage -AllUsers | Remove-AppxPackage | Out-Null
+	echo "Attempting to remove $appPackage"
+
+    Get-AppxPackage -AllUsers -Name $appPackage | Remove-AppxPackage | Out-Null
 	Get-AppxPackage -AllUsers | Where-Object Name -In $appPackage | Remove-AppxPackage | Out-Null
+
     Get-AppXProvisionedPackage -Online | where DisplayName -EQ $appPackage | Remove-AppxProvisionedPackage -Online | Out-Null
 	Get-AppxProvisionedPackage -Online | Where-Object Name -In $appPackage | Remove-AppxProvisionedPackage -Online | Out-Null
-	#remove-appxpackage $(Get-AppxPackage | where {$_.name -like "*" + $appPackage + "*"}).PackageFullName | Out-Null
+
+	Remove-AppxPackage $(Get-AppxPackage | where {$_.name -like "*" + $appPackage + "*"}).PackageFullName | Out-Null
+
 }

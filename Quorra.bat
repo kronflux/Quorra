@@ -1,23 +1,32 @@
+:: TODO: Implement alternate method for Windows 8.1 upgrade. Hoping to launch Windows Store to Upgrade page.
+:: TODO: Add duplicate file detection to Temp Cleanup Script
+:: TODO: Some form of Runtime update system, possibly launch Ninite or similar
+
 @CLS
 @ECHO OFF
 setlocal enableextensions
 CD /D "%HOMEDRIVE%%HOMEPATH%"
-set SCRIPT_VERSION=0.0.1
+set SCRIPT_VERSION=0.0.2
 
-:: Change these variables to match your setup, the default points to \\share\afk\scripts with a subfolder called resources
-set SHARE_HOST=share
-set SHARE_NAME=afk
+:: Change these variables to match your setup, the default points to \\techpc\share\scripts with a subfolder called resources
+set SHARE_HOST=techpc
+set SHARE_NAME=share
 set SHARE_SCRIPT_FOLDER=scripts
 set SHARE_SCRIPT_RESOURCES_FOLDER=resources
+set SHARE_MOUNT_DRIVE=Z:
 set TIME_ZONE=Mountain Standard Time
 set TIME_SERVER=time-a.nist.gov
+set SUPPORT_NAME=Tech Support
+set SUPPORT_PHONE=1-800-555-1234
+set SUPPORT_URL=https://support.techsupport.ca
+set SUPPORT_ICON_TEXT=Tech Support
 
 :: Windows upgrade bits go in these folders, the structure should be included with this script
 set SHARE_WIN10_FOLDER=updates\win10upgrade
 set SHARE_WIN81_FOLDER=updates\win81upgrade
 
-:: Are you a Microsoft partner? if so, an internal 8.1 upgrade solution will be implemented, if not an alernate manual upgrade method will be use.
-set MS_PARTNER=TRUE
+:: Are you a Microsoft partner? if so, an internal 8.1 upgrade solution will be implemented, if not an alernate manual upgrade method will be used.
+set MS_PARTNER=FALSE
 
 set WIN_NAME=undetected
 set WIN_VER=undetected
@@ -27,14 +36,20 @@ SET NEWSETUP=undecided
 SET REMOVALS=undecided
 SET ICONS=undecided
 SET TWEAKS=undecided
+SET TEMPCLEAN=undecided
 SET SUPPORT=undecided
+:: SET RUNTIMES=undecided
 
-:: Check for administrative priveleges, attempt to elevate if not already
+:: BatchGotAdmin - Check for administrative priveleges, attempt to elevate if not already
 :-------------------------------------
-::  --> Check for permissions
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
+REM  --> Check for permissions
+    IF "%PROCESSOR_ARCHITECTURE%" EQU "amd64" (
+>nul 2>&1 "%SYSTEMROOT%\SysWOW64\cacls.exe" "%SYSTEMROOT%\SysWOW64\config\system"
+) ELSE (
+>nul 2>&1 "%SYSTEMROOT%\System32\cacls.exe" "%SYSTEMROOT%\System32\config\system"
+)
 
-:: --> If error flag set, we do not have admin.
+REM --> If error flag set, we do not have admin.
 if '%errorlevel%' NEQ '0' (
     echo Requesting administrative privileges...
     goto UACPrompt
@@ -42,28 +57,33 @@ if '%errorlevel%' NEQ '0' (
 
 :UACPrompt
     echo Set UAC = CreateObject^("Shell.Application"^) > "%temp%\getadmin.vbs"
-    echo UAC.ShellExecute "%~s0", "", "", "runas", 1 >> "%temp%\getadmin.vbs"
+    set params = %*:"=""
+    echo UAC.ShellExecute "cmd.exe", "/c ""%~s0"" %params%", "", "runas", 1 >> "%temp%\getadmin.vbs"
 
     "%temp%\getadmin.vbs"
+    del "%temp%\getadmin.vbs"
     exit /B
 
 :gotAdmin
     if exist "%temp%\getadmin.vbs" ( del "%temp%\getadmin.vbs" )
-    pushd "%CD%"
+    pushd "%HOMEDRIVE%%HOMEPATH%"
     CD /D "%HOMEDRIVE%%HOMEPATH%"
 :--------------------------------------
+
 color 03
 title Quorra v%SCRIPT_VERSION%
-:::    ___                             
-:::   / _ \ _   _  ___  _ __ _ __ __ _ 
-:::  | | | | | | |/ _ \| '__| '__/ _` |
-:::  | |_| | |_| | (_) | |  | | | (_| |
-:::   \__\_\\__,_|\___/|_|  |_|  \__,_|
+:::                     ____
+:::                    / __ \
+:::                   | |  | |_   _  ___  _ __ _ __ __ _
+:::                   | |  | | | | |/ _ \| '__| '__/ _` |
+:::                   | |__| | |_| | (_) | |  | | | (_| |
+:::                    \___\_\\__,_|\___/|_|  |_|  \__,_|
 
 for /f "delims=: tokens=*" %%A in ('findstr /b ::: "%~f0"') do @echo(%%A
-echo =======================================
-echo.  Welcome to Quorra! Blah Blah Blah !
-echo =======================================
+echo  ============================================================================
+echo.       Welcome to Quorra! A Junk Cleanup, System Setup and Tweak Script
+echo.                          Written by Richard M
+echo  ============================================================================
 echo.
 
 echo Setting Time Zone to %TIME_ZONE%
@@ -134,15 +154,15 @@ echo Location: \\%SHARE_HOST%\%SHARE_NAME%
 echo IP: %SHARE_IP%
 echo.
 echo Mounting share to drive Z
-net use z: "\\%SHARE_IP%\%SHARE_NAME%" /user:Everyone /P:Yes >nul 2>&1
-pushd "Z:\%SHARE_SCRIPT_FOLDER%" >nul 2>&1
-CD /D "Z:\%SHARE_SCRIPT_FOLDER%" >nul 2>&1
+net use %SHARE_MOUNT_DRIVE% "\\%SHARE_IP%\%SHARE_NAME%" /user:Everyone /P:Yes >nul 2>&1
+pushd "%SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%" >nul 2>&1
+CD /D "%SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%" >nul 2>&1
 
 echo.
 
 :: Start Caffeine to prevent system from sleeping
-if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\caffeine.exe" (
-start "" Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\caffeine.exe -noicon
+if exist "%SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\caffeine.exe" (
+start "" %SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\caffeine.exe -noicon
 )
 
 :: Add script to system startup in case of unexpected reboot
@@ -171,27 +191,39 @@ SET NEWSETUP=True
 SET REMOVALS=True
 SET ICONS=True
 SET TWEAKS=True
-SET RUNTIMES=True
+:: SET RUNTIMES=True
 SET SUPPORT=True
 echo NEWSETUP > %temp%\Quorra_NEWSETUP.tmp )
 
+IF NOT "%REMOVALS%"=="True" (
 CHOICE /C YN /M "Run Quorra with Removals?"
 IF ERRORLEVEL 2 timeout 1 >nul 2>&1
 IF ERRORLEVEL 1 (
 SET REMOVALS=True
-echo REMOVALS > %temp%\Quorra_REMOVALS.tmp )
+echo REMOVALS > %temp%\Quorra_REMOVALS.tmp
+))
 
+IF NOT "%ICONS%"=="True" (
 CHOICE /C YN /M "Remove Desktop icons, Favorites and Pinned Taskbar Items?"
 IF ERRORLEVEL 2 timeout 1 >nul 2>&1
 IF ERRORLEVEL 1 (
 SET ICONS=True
-echo ICONS > %temp%\Quorra_ICONS.tmp )
+echo ICONS > %temp%\Quorra_ICONS.tmp
+))
 
+IF NOT "%ICONS%"=="True" (
 CHOICE /C YN /M "Run Quorra with Tweaks?"
 IF ERRORLEVEL 2 timeout 1 >nul 2>&1
 IF ERRORLEVEL 1 (
 SET TWEAKS=True
-echo TWEAKS > %temp%\Quorra_TWEAKS.tmp )
+echo TWEAKS > %temp%\Quorra_TWEAKS.tmp
+))
+
+CHOICE /C YN /M "Run a temp files cleanup after removal step? (Runs whether or not Removals are selected)"
+IF ERRORLEVEL 2 timeout 1 >nul 2>&1
+IF ERRORLEVEL 1 (
+SET TEMPCLEAN=True
+echo TEMPCLEAN > %temp%\Quorra_TEMPCLEAN.tmp )
 
 ::CHOICE /C YN /M "Run Quorra with Runtime Updates? (Adobe Reader, Flash, Java, Silverlight)"
 ::IF ERRORLEVEL 2 timeout 1 >nul 2>&1
@@ -199,11 +231,11 @@ echo TWEAKS > %temp%\Quorra_TWEAKS.tmp )
 ::SET RUNTIMES=True
 ::echo RUNTIMES > %temp%\Quorra_RUNTIMES.tmp )
 
-::CHOICE /C YN /M "Run Quorra with Support Information?"
-::IF ERRORLEVEL 2 timeout 1 >nul 2>&1
-::IF ERRORLEVEL 1 (
-::SET SUPPORT=True
-::echo SUPPORT > %temp%\Quorra_SUPPORT.tmp )
+CHOICE /C YN /M "Run Quorra with Support Information?"
+IF ERRORLEVEL 2 timeout 1 >nul 2>&1
+IF ERRORLEVEL 1 (
+SET SUPPORT=True
+echo SUPPORT > %temp%\Quorra_SUPPORT.tmp )
 
 echo.
 
@@ -237,9 +269,9 @@ ECHO.
 :: General Removals
 if "%REMOVALS%"=="True" (
 echo GENREM > %temp%\Quorra_GENREM.tmp
-if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_general.bat" (
+if exist "%SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_general.bat" (
 echo Starting General Removals
-start "Quorra - General Removals" /wait Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_general.bat
+start "Quorra - General Removals" /wait %SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_general.bat
 echo General Removals Complete
 if exist "%temp%\Quorra_GENREM.tmp" DEL "%temp%\Quorra_GENREM.tmp"
 echo.
@@ -249,9 +281,9 @@ echo.
 :: Removals by GUID method
 if "%REMOVALS%"=="True" (
 echo GUIDREM > %temp%\Quorra_GUIDREM.tmp
-if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_by_GUID.bat" (
+if exist "%SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_by_GUID.bat" (
 echo Starting Removals by GUID
-start "Quorra - GUID Removals" /wait Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_by_GUID.bat
+start "Quorra - GUID Removals" /wait %SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_by_GUID.bat
 echo Removals by GUID Complete
 if exist "%temp%\Quorra_GUIDREM.tmp" DEL "%temp%\Quorra_GUIDREM.tmp"
 echo.
@@ -261,9 +293,9 @@ echo.
 :: Toolbar Removals by GUID method
 if "%REMOVALS%"=="True" (
 echo TBGUIDREM > %temp%\Quorra_TBGUIDREM.tmp
-if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\toolbars_BHOs_to_target_by_GUID.bat" (
+if exist "%SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\toolbars_BHOs_to_target_by_GUID.bat" (
 echo Starting Toolbar Removals by GUID
-start "Quorra - Toolbar GUID Removals" /wait Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\toolbars_BHOs_to_target_by_GUID.bat
+start "Quorra - Toolbar GUID Removals" /wait %SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\toolbars_BHOs_to_target_by_GUID.bat
 echo Toolbar Removals by GUID Complete
 if exist "%temp%\Quorra_TBGUIDREM.tmp" DEL "%temp%\Quorra_TBGUIDREM.tmp"
 echo.
@@ -273,9 +305,9 @@ echo.
 :: Removals by Name method
 if "%REMOVALS%"=="True" (
 echo NAMEREM > %temp%\Quorra_NAMEREM.tmp
-if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_by_name.txt" (
+if exist "%SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_by_name.txt" (
 ECHO Starting removals by name... This may take a while.
-for /f "tokens=*" %%i in (Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_by_name.txt) DO (
+for /f "tokens=*" %%i in (%SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\programs_to_target_by_name.txt) DO (
     echo Searching for %%i...
     wmic product where "name like '%%i'" uninstall /nointeractive
 )
@@ -288,15 +320,15 @@ ECHO.
 :: Modern Windows App Removal
 if "%REMOVALS%"=="True" (
 echo PSREM > %temp%\Quorra_PSREM.tmp
-if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\metro_3rd_party_modern_apps_to_target_by_name.ps1" (
+if exist "%SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\metro_3rd_party_modern_apps_to_target_by_name.ps1" (
 ECHO Starting Modern App Removal...
-powershell -noprofile -executionpolicy bypass -file "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\metro_3rd_party_modern_apps_to_target_by_name.ps1"
+Powershell -noprofile -ExecutionPolicy Bypass -File "%SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\metro_3rd_party_modern_apps_to_target_by_name.ps1"
 ECHO Modern App Removal Complete
 ECHO.
 )
-if exist "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\metro_Microsoft_modern_apps_to_target_by_name.ps1" (
+if exist "%SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\metro_Microsoft_modern_apps_to_target_by_name.ps1" (
 ECHO Starting Modern App Removal...
-powershell -noprofile -executionpolicy bypass -file "Z:\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\metro_Microsoft_modern_apps_to_target_by_name.ps1"
+Powershell -noprofile -ExecutionPolicy Bypass -File "%SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\metro_Microsoft_modern_apps_to_target_by_name.ps1"
 ECHO Modern App Removal Complete
 if exist "%temp%\Quorra_PSREM.tmp" DEL "%temp%\Quorra_PSREM.tmp"
 ECHO.
@@ -323,9 +355,7 @@ DEL /F /Q "%UserProfile%\Favorites\Microsoft Websites\*.url" >nul 2>&1
 DEL /F /Q "%UserProfile%\Favorites\MSN Websites\*.url" >nul 2>&1
 DEL /F /Q "%UserProfile%\Favorites\Websites for United States\*.url" >nul 2>&1
 DEL /F /Q "%UserProfile%\Favorites\Windows Live\*.url" >nul 2>&1
-DEL /F /S /Q /A "%AppData%\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\*" >nul 2>&1
 reg delete "HKCU\Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Compatibility Assistant\Store" /f
-REG DELETE HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband /f
 RMDIR "%ProgramData%\Microsoft\Windows\Start Menu\Programs\McAfee" >nul 2>&1
 RMDIR "%UserProfile%\Favorites\Acer" >nul 2>&1
 RMDIR "%UserProfile%\Favorites\HP" >nul 2>&1
@@ -340,16 +370,35 @@ RMDIR /S /Q "%ProgramFiles%\Booking.com" >nul 2>&1
 RMDIR /S /Q "%ProgramFiles(x86)%\Accessory Store" >nul 2>&1
 RMDIR /S /Q "%ProgramFiles(x86)%\Amazon Weblink" >nul 2>&1
 RMDIR /S /Q "%ProgramFiles(x86)%\Booking.com" >nul 2>&1
+
+:: Set Read-Only on File Explorer in Pinned Items, Delete all other pins, unset Read-Only
+IF NOT EXIST "%AppData%\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\File Explorer.lnk" (
+COPY /Y "%SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\File Explorer.lnk" "%AppData%\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\File Explorer.lnk"
 )
+ATTRIB +R +S +H "%AppData%\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\File Explorer.lnk" >nul 2>&1
+DEL /S /Q "%AppData%\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\*" >nul 2>&1
+ATTRIB -R -S -H "%AppData%\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\File Explorer.lnk" >nul 2>&1
+if exist "%AppData%\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar\File Explorer.lnk" (
+reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband\Favorites" /f >nul 2>&1
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Taskband" /v "Favorites" /t REG_BINARY /d 006401000032001f80c827341f105c1042aa032ee45287d6681e0000002500efbe120000006576b6a982f4d101bcf020ab82f4d101140056003100000000000c49225211005461736b42617200400009000400efbe0c4922520c4922522e000000fb760100000002000000000000000000000000000000b196e8005400610073006b0042006100720000001600da003200970100001643cc36200046494c4545587e312e4c4e4b00007c0009000400efbe0c4922520c4922522e000000007701000000010000000000000000005200000000007f81cc00460069006c00650020004500780070006c006f007200650072002e006c006e006b00000040007300680065006c006c00330032002e0064006c006c002c002d003200320030003600370000001c00420000001d00efbe02004d006900630072006f0073006f00660074002e00570069006e0064006f00770073002e004500780070006c006f0072006500720000001c000000ff /f >nul 2>&1
+))
+
+:tempCleanup
+:: Temporary files cleanup
+if "%TEMPCLEAN%"=="True" (
+echo TMPREM > %temp%\Quorra_TMPREM.tmp
+if exist "%SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\TempFileCleanup.bat" (
+echo Starting Temporary Files Cleanup
+start "Quorra - Temp File Cleanup" /wait %SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\TempFileCleanup.bat
+echo Temporary Files Cleanup Complete
+if exist "%temp%\Quorra_TMPREM.tmp" DEL "%temp%\Quorra_TMPREM.tmp"
+))
 
 :tweakStuff
 :: Common customizations, security enhancements, etc
 if "%TWEAKS%"=="True" (
 :: Show desktop wallpaper on Start screen (Windows 8)
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent" /v "MotionAccentId_v1.00" /t REG_DWORD /d 0x000000db /f >nul 2>&1
-
-:: Set start screen color to default (Windows 8)
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Accent" /v "ColorSet_Version3" /t REG_DWORD /d 0x00000008 /f >nul 2>&1
 
 :: List Desktop apps first in the Apps view when sorted by category (Windows 8)
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\StartPage" /v "DesktopFirst" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
@@ -362,21 +411,6 @@ reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\HideDesktopIcon
 
 :: Do not show Windows Store on Taskbar
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "StoreAppsOnTaskbar" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-
-:: Do not constantly check whether disk is running low on space (Improves performance)
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v NoLowDiskSpaceChecks /t REG_DWORD /d 0x00000001 /f >nul 2>&1
-
-:: Disable Automatic Network Shortcut Resolution
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v LinkResolveIgnoreLinkInfo /t REG_DWORD /d 0x00000001 /f >nul 2>&1
-
-:: Disable Search for Broken Shortcuts
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v NoResolveSearch /t REG_DWORD /d 0x00000001 /f >nul 2>&1
-
-:: Disable Tracking of Broken Shortcuts
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v NoResolveTrack /t REG_DWORD /d 0x00000001 /f >nul 2>&1
-
-:: Disable using Web service to check for unknown file types
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" /v NoInternetOpenWith /t REG_DWORD /d 0x00000001 /f >nul 2>&1
 
 :: Disable Aero Shake
 reg add "HKCU\Software\Policies\Microsoft\Windows" /v NoWindowMinimizingShortcuts /t REG_DWORD /d 0x00000001 /f >nul 2>&1
@@ -411,25 +445,6 @@ reg add "HKCR\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContai
 reg add "HKCR\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Storage\microsoft.microsoftedge_8wekyb3d8bbwe\MicrosoftEdge\Main" /v "HomeButtonPage" /t REG_SZ /d "https://www.google.ca/" /f >nul 2>&1
 reg add "HKCR\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppContainer\Storage\microsoft.microsoftedge_8wekyb3d8bbwe\MicrosoftEdge\Main" /v "IE10TourShown" /t REG_SZ /d 0x00000001 /f >nul 2>&1
 
-:: Hide Search Box on Taskbar
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "SearchBoxTaskbarMode" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-
-:: Download updates from Microsoft and LAN
-reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config" /v "DownloadMode" /t REG_DWORD /d 0x00000002 /f >nul 2>&1
-
-:: Disable Peer to Peer Updates
-reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\DeliveryOptimization\Config" /v "DODownloadMode" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-
-:: Disable Diagnostic and usage data
-reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection" /v "AllowTelemetry" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-
-:: Disable Application Impact Telemetry
-reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\AppCompat" /v "AITEnable" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-
-:: Disable Keylogger
-reg add "HKLM\SYSTEM\CurrentControlSet\Control\WMI\AutoLogger\AutoLogger-Diagtrack-Listener" /v "Start" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-
 :: Open Explorer to This PC instead of Quick Access
 reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" /v "LaunchTo" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
 
@@ -438,53 +453,6 @@ reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\FolderDescri
 
 :: Add Pin to Start to Context Menu
 reg add "HKCR\*\shellex\ContextMenuHandlers\PintoStartScreen" /ve /t REG_SZ /d "{470C0EBD-5D73-4d58-9CED-E91E22E23282}" /f >nul 2>&1
-
-:: Disable Web Search from Start Menu
-reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v "DisableWebSearch" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
-
-:: Disable Bing Search
-reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v "ConnectedSearchUseWeb" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Windows Search" /v "ConnectedSearchUseWebOverMeteredConnections" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-
-:: LOL Why is Dr Watson still in Windows 10? Let's disable that...
-reg delete "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AeDebug" /f >nul 2>&1
-reg delete "HKLM\SOFTWARE\Wow6432Node\Microsoft\Windows NT\CurrentVersion\AeDebug" /f >nul 2>&1
-
-:: Disable Fault Tolerant Heap (This is mostly for developers. Average user will never need this)
-reg add "HKLM\SOFTWARE\Software\Microsoft\FTH" /v "Enabled" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-
-:: Harden RPC
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\RpcSs" /v "ListenOnInternet" /t REG_SZ /d "N" /f >nul 2>&1
-
-:: Disable IPv6 as it ignores most Windows network security
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\tcpip6\Parameters" /v "DisabledComponents" /t REG_DWORD /d 0xfffffff /f >nul 2>&1
-
-:: Disable DCOM
-reg add "HKLM\Software\Microsoft\Ole" /v "EnableDCOM" /t REG_SZ /d "N" /f >nul 2>&1
-
-:: Harden TCPIP Stack
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\AFD\Parameters" /v "DisableAddressSharing" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\AFD\Parameters" /v "DynamicBacklogGrowthDelta" /t REG_DWORD /d 0x00000010 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\AFD\Parameters" /v "EnableDynamicBacklog" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\AFD\Parameters" /v "MaximumDynamicBacklog" /t REG_DWORD /d 0x00004000 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\AFD\Parameters" /v "MinimumDynamicBacklog" /t REG_DWORD /d 0x00000010 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\Netbt\Parameters" /v "NoNameReleaseOnDemand" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "DisableIPSourceRouting" /t REG_DWORD /d 0x00000002 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "EnableAddrMaskReply" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "EnableDeadGWDetect" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "EnableICMPRedirect" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "EnableMulticastForwarding" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "EnablePMTUDiscovery" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "IPEnableRouter" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "KeepAliveTime" /t REG_DWORD /d 0x000493e0 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "NoNameReleaseOnDemand" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "PerformRouterDiscovery" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "SynAttackProtect" /t REG_DWORD /d 0x00000002 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "TcpMaxConnectResponseRetransmissions" /t REG_DWORD /d 0x00000002 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "TcpMaxDataRetransmissions" /t REG_DWORD /d 0x00000002 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "TcpMaxHalfOpen" /t REG_DWORD /d 0x000001f4 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "TcpMaxHalfOpenRetried" /t REG_DWORD /d 0x00000190 /f >nul 2>&1
-reg add "HKLM\SYSTEM\CurrentControlSet\Services\TcpIp\Parameters" /v "TcpMaxPortsExhausted" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
 
 :: Disable Windows Customer Experience Improvement Program
 reg add "HKLM\SOFTWARE\Policies\Microsoft\SQMClient\Windows" /v "CEIPEnable" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
@@ -496,10 +464,6 @@ reg add "HKCU\Software\Microsoft\Internet Explorer\Main" /v "Enable Browser Exte
 reg add "HKCU\Software\Microsoft\Internet Explorer\Main" /v "NoJITSetup" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
 reg add "HKCU\Software\Microsoft\Internet Explorer\Main" /v "NoWebJITSetup" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
 
-:: Do not allow software to run if signature is invalid
-reg add "HKLM\Software\Microsoft\Internet Explorer\Download" /v "CheckExeSignatures" /t REG_SZ /d "yes" /f >nul 2>&1
-reg add "HKCU\Software\Microsoft\Internet Explorer\Download" /v "RunInvalidSignatures" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
-
 :: Use EdgeHTML in IE
 reg add "HKCU\Software\Microsoft\Internet Explorer\Main" /v "DisableRandomFlighting" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
 reg add "HKCU\Software\Microsoft\Internet Explorer\Main" /v "EnableLegacyEdgeSwitching" /t REG_DWORD /d 0x00000001 /f >nul 2>&1
@@ -508,8 +472,26 @@ reg add "HKCU\Software\Microsoft\Internet Explorer\Main" /v "EnableLegacyEdgeSwi
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v "ApplicationTileImmersiveActivation" /t REG_DWORD /d 0x00000000 /f >nul 2>&1
 reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation" /v "AssociationActivationMode" /t REG_DWORD /d 0x00000002 /f >nul 2>&1
 
-:: Set IGMP as send only as is rarely used and could pose a security risk
-netsh interface ipv4 set global mldlevel=sendonly >nul 2>&1
+)
+
+IF "%SUPPORT%"=="True" (
+:: Add support information to Desktop and System Properties
+echo Adding support information to system
+copy  /y "%SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\support.ico" "%public%\support.ico"
+copy /y "%SHARE_MOUNT_DRIVE%\%SHARE_SCRIPT_FOLDER%\%SHARE_SCRIPT_RESOURCES_FOLDER%\support.bmp" "%WinDir%\support.bmp"
+
+attrib +h +s "%public%\support.ico"
+attrib +h +s "%WinDir%\support.bmp"
+
+echo [InternetShortcut] > "%public%\Desktop\%SUPPORT_ICON_TEXT%.url"
+echo URL=%SUPPORT_URL% >> "%public%\Desktop\%SUPPORT_ICON_TEXT%.url"
+echo IconFile=%public%\support.ico >> "%public%\Desktop\%SUPPORT_ICON_TEXT%.url"
+echo IconIndex=0 >> "%public%\Desktop\%SUPPORT_ICON_TEXT%.url"
+
+reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation /v Manufacturer /t REG_SZ /d "%SUPPORT_NAME%" /f >nul 2>&1
+reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation /v SupportPhone /t REG_SZ /d "%SUPPORT_PHONE%" /f >nul 2>&1
+reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation /v SupportURL /t REG_SZ /d "%SUPPORT_URL%" /f >nul 2>&1
+reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\OEMInformation /v Logo /t REG_EXPAND_SZ /d "%WinDir%\support.bmp" /f >nul 2>&1
 )
 
 :: Remove startup entry
@@ -532,9 +514,13 @@ reg add "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System" /v "Val
 echo Unmounting network share
 net use * /delete /yes >nul 2>&1
 
+:: Kill the caffeine.exe process
+echo Killing Caffeine Process
+taskkill /f /t /im "caffeine.exe" >nul 2>&1
+
+:: Remove recent file entry and remove leftover temp files from Quorra
 echo Tidying Up
 
-taskkill /f /t /im "caffeine.exe" >nul 2>&1
 del "%appdata%\Microsoft\Windows\Recent\*.*" /q >nul 2>&1
 del "%appdata%\microsoft\windows\recent\automaticdestinations\*.*" /q >nul 2>&1
 rundll32.exe inetcpl.cpl,ClearMyTracksByProcess 4351 >nul 2>&1
@@ -550,6 +536,7 @@ IF EXIST %temp%\Quorra_GUIDREM.tmp DEL %temp%\Quorra_GUIDREM.tmp
 IF EXIST %temp%\Quorra_TBGUIDREM.tmp DEL %temp%\Quorra_TBGUIDREM.tmp
 IF EXIST %temp%\Quorra_NAMEREM.tmp DEL %temp%\Quorra_NAMEREM.tmp
 IF EXIST %temp%\Quorra_PSREM.tmp DEL %temp%\Quorra_PSREM.tmp
+IF EXIST %temp%\Quorra_TMPREM.tmp DEL %temp%\Quorra_TMPREM.tmp
 
 endlocal
 exit
@@ -558,6 +545,7 @@ exit
 IF EXIST %temp%\Quorra_NEWSETUP.tmp SET NEWSETUP=True
 IF EXIST %temp%\Quorra_REMOVALS.tmp SET REMOVALS=True
 IF EXIST %temp%\Quorra_ICONS.tmp SET ICONS=True
+IF EXIST %temp%\Quorra_TEMPCLEAN.tmp SET TEMPCLEAN=True
 IF EXIST %temp%\Quorra_TWEAKS.tmp SET TWEAKS=True
 IF EXIST %temp%\Quorra_RUNTIMES.tmp SET RUNTIMES=True
 IF EXIST %temp%\Quorra_SUPPORT.tmp SET SUPPORT=True
@@ -567,3 +555,4 @@ IF EXIST %temp%\Quorra_GUIDREM.tmp GOTO :removalsGUID
 IF EXIST %temp%\Quorra_TBGUIDREM.tmp GOTO :removalsGUIDToolbars
 IF EXIST %temp%\Quorra_NAMEREM.tmp GOTO :removalsNAME
 IF EXIST %temp%\Quorra_PSREM.tmp GOTO :removalsPS
+IF EXIST %temp%\Quorra_TMPREM.tmp GOTO :tempCleanup

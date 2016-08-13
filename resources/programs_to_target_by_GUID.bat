@@ -1,7 +1,11 @@
 :: Initial list by reddit.com/user/tuxedo_jack, modifications for use in Tron by reddit.com/user/vocatus and many, many, many others
 :: Add any GUID uninstall commands to this list to target them for removal
-@echo off
 
+:: Set home path and clear screen to remove UNC path warnings
+pushd "%HOMEDRIVE%%HOMEPATH%"
+CD /D "%HOMEDRIVE%%HOMEPATH%"
+@cls
+@echo off
 
 :::::::::::::::
 :: GUID LIST ::

@@ -518,6 +518,20 @@ net use * /delete /yes >nul 2>&1
 echo Killing Caffeine Process
 taskkill /f /t /im "caffeine.exe" >nul 2>&1
 
+:: Set theme to Aero default
+IF "%NEWSETUP%"=="True" (
+explorer.exe "%WinDir%\Resources\Themes\aero.theme" >nul 2>&1
+)
+
+:: Restart explorer.exe
+ECHO Restarting Explorer
+taskkill /f /im explorer.exe >nul 2>&1
+timeout 2 >nul 2>&1
+echo. | Runas /profile /user:%ComputerName%\%UserName% explorer.exe >nul 2>&1
+tasklist /fi "imagename eq explorer.exe" |find ":" > nul
+if errorlevel 2 start explorer.exe >nul 2>&1
+if errorlevel 1 timeout 1 >nul 2>&1
+
 :: Remove recent file entry and remove leftover temp files from Quorra
 echo Tidying Up
 

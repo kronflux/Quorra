@@ -1,8 +1,5 @@
-THIS PROJECT IS CURRENTLY ON HIATUS, AS IT WAS DESIGNED FOR A SPECIFIC ENVIRONMENT WHICH I CURRENTLY NO LONGER HAVE ACCESS TO.
-I WILL EVENTUALLY CONTINUE THIS PROJECT, BUT FOR NOW IT IS FAIRLY USELESS. FEEL FREE TO USE SNIPPETS OF THE CODE, JUST REMEMBER TO GIVE CREDIT WHERE CREDIT IS DUE.
-
 # Quorra
-A script designed to automate computer setups
+A script designed to automate new computer setups
 
 This script is intended to remove OEM junk software that comes with new computers. It is also intended to assist in malware/junkware removals and tune-ups.
 
@@ -10,12 +7,12 @@ Quorra was originally designed to be run in a very specific environment and stru
 
 As of right now, the correct folder structure is as follows:
 
-\\\share\afk\scripts\Quorra.bat
+\\\techpc\share\scripts\Quorra.bat
 
-\\\share\afk\scripts\resources\
+\\\techpc\share\scripts\resources\
 
 In time, it will hopefully be completely portable and useful in any share, locally or on removable media.
 
 I would like to take the time to point out that many of the entries this script is designed to remove are directly ported from the Tron project (https://github.com/bmrf/tron).
 
-Quorra is the spiritual sister script to Tron.
+Quorra is a spiritual sister script to Tron.

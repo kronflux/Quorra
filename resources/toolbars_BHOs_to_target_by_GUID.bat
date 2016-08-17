@@ -2349,4 +2349,4 @@ start /wait msiexec /qn /norestart /x {7b13ec3e-999a-4b70-b9cb-2617b8323822}
 :: Zywaver Sidebar
 start /wait msiexec /qn /norestart /x {5C65ECC1-68F7-4550-B083-DF4AB05A84EE}
 
-exit /b
+exit

@@ -93,7 +93,7 @@ reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU
 reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\UserAssist
 reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs
 
-Clearing Explorer Recents
+echo Clearing Explorer Recents
 RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 1
 
 exit /b

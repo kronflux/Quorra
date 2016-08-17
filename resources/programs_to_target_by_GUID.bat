@@ -4539,4 +4539,4 @@ start /wait msiexec /qn /norestart /x {57C51D56-B287-4C11-9192-EC3C46EF76A4}
 start /wait msiexec /qn /norestart /x {51C839E1-2BE4-4E77-A1BA-CCEA5DAFA741}
 start /wait msiexec /qn /norestart /x {6B33492E-FBBC-4EC3-8738-09E16E395A10}
 
-exit /b
+exit

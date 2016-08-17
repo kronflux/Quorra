@@ -96,4 +96,4 @@ reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\RecentDocs
 echo Clearing Explorer Recents
 RunDll32.exe InetCpl.cpl,ClearMyTracksByProcess 1
 
-exit /b
+exit

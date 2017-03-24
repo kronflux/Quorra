@@ -1,3 +1,5 @@
+# WARNING. SOME OF THIS IS CURRENTLY BROKEN. THIS PROJECT IS ON HIATUS FOR NOW.
+
 # Quorra
 A script designed to automate new computer setups
 
